@@ -25,7 +25,7 @@ public class LogIn {
 
 	private String[] login = new String[2];
 	private String usuarioSum = null;
-	private Path path = Paths.get("C:\\Users\\Laboratorio\\Desktop\\users.txt");
+	private Path path = Paths.get("C:\\Users\\Laboratorio\\Desktop\\Tarea Avanzado\\users.txt");
 
 	public void logInPrompt() {
 

@@ -1,18 +1,25 @@
 package com.utn.vista;
 
-public interface RopaDAO {
+import java.text.DateFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
 
-	public void modeloGetStock(Ropa ropa);
+public interface RopaDAO {
 	
-	public void modeloGetPrecio(Ropa ropa);
 	
-	public void modeloGetFabrica(Ropa ropa);
+	public Ropa modeloBuscar(Ropa ropa);
 	
-	public void modeloGetFechaInicioProd(Ropa ropa);
+	public int modeloGetStock(Ropa ropa);
+	
+	public String modeloGetPrecio(Ropa ropa);
+	
+	public String modeloGetFabrica(Ropa ropa);
+	
+	public String modeloGetFechaInicioProd(Ropa ropa);
 	
 	public int modeloRealizarVenta(Ropa ropa);
 	
-	public int modeloModificar(Ropa ropa);
+	public int modeloModificar(Ropa ropa, Ropa nuevoRopa);
 
 	public String dbGetCredentials();
 	

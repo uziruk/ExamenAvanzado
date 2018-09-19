@@ -1,31 +1,28 @@
 package com.utn.vista;
 
-import java.awt.HeadlessException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.Key;
 import java.sql.Connection;
-import java.text.SimpleDateFormat;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.time.LocalDate;
+import java.text.DateFormat;
+import java.text.NumberFormat;
 import java.util.Base64;
-import java.util.Date;
-
-import javax.swing.JOptionPane;
+import java.util.Locale;
 
 public class RopaDAOJDBCImpl implements RopaDAO {
-
-	public String url = "jdbc:mysql://localhost:3306/ropa?useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
-
-	public void modeloGetStock(Ropa ropa) {
+	private Locale currentLocale = new Locale("es", "AR");	
+	private NumberFormat currency = NumberFormat.getCurrencyInstance(currentLocale);
+	private DateFormat df = DateFormat.getDateInstance(DateFormat.DEFAULT,
+			currentLocale);
+	
+	private String url = "jdbc:mysql://localhost:3306/ropa?useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
+	public int modeloGetStock(Ropa ropa) {
 
 		Connection con = null;
 		PreparedStatement stmt = null;
@@ -49,8 +46,7 @@ public class RopaDAOJDBCImpl implements RopaDAO {
 
 				ropa.setStock(Integer.parseInt(rs.getString("stock")));
 
-				JOptionPane.showMessageDialog(null,
-						"El stock del modelo " + ropa.getNombreModelo() + " es " + ropa.getStock());
+				return ropa.getStock();
 
 			}
 
@@ -58,7 +54,7 @@ public class RopaDAOJDBCImpl implements RopaDAO {
 
 			{
 
-				JOptionPane.showMessageDialog(null, "modelo no encontrado");
+				return -1;
 
 			}
 
@@ -96,8 +92,7 @@ public class RopaDAOJDBCImpl implements RopaDAO {
 		}
 
 	}
-
-	public void modeloGetPrecio(Ropa ropa)
+	public String modeloGetPrecio(Ropa ropa)
 
 	{
 		Connection con = null;
@@ -120,18 +115,15 @@ public class RopaDAOJDBCImpl implements RopaDAO {
 
 			{
 
-				ropa.setPrecio(Float.parseFloat(rs.getString("precio")));
+				ropa.setPrecioString(currency.format(rs.getFloat("precio")));
 
-				JOptionPane.showMessageDialog(null,
-						"El precio del modelo " + ropa.getNombreModelo() + " es " + ropa.getPrecio());
-
+				return ropa.getPrecioString();
 			}
 
 			else
 
 			{
-
-				JOptionPane.showMessageDialog(null, "Precio no encontrado");
+				return null;
 
 			}
 
@@ -169,8 +161,7 @@ public class RopaDAOJDBCImpl implements RopaDAO {
 		}
 
 	}
-
-	public void modeloGetFabrica(Ropa ropa)
+	public String modeloGetFabrica(Ropa ropa)
 
 	{
 		Connection con = null;
@@ -193,18 +184,14 @@ public class RopaDAOJDBCImpl implements RopaDAO {
 
 			{
 
-				ropa.setFabrica(rs.getString("f_nombre"));
-
-				JOptionPane.showMessageDialog(null,
-						"La fabrica del modelo " + ropa.getNombreModelo() + " es " + ropa.getFabrica());
-
+				return rs.getString("f_nombre");
 			}
 
 			else
 
 			{
 
-				JOptionPane.showMessageDialog(null, "Fabrica no encontrada");
+				return "Fabrica no encontrada";
 
 			}
 
@@ -243,8 +230,7 @@ public class RopaDAOJDBCImpl implements RopaDAO {
 		}
 
 	}
-
-	public void modeloGetFechaInicioProd(Ropa ropa)
+	public String modeloGetFechaInicioProd(Ropa ropa)
 
 	{
 
@@ -268,10 +254,10 @@ public class RopaDAOJDBCImpl implements RopaDAO {
 
 			{
 
-				ropa.setFechaInicioProd(LocalDate.parse(rs.getString("fecha_inicio_prod")));
+				
+					return df.format(rs.getDate("fecha_inicio_prod"));
 
-				JOptionPane.showMessageDialog(null, "LA fecha de inicio de produccion del modelo "
-						+ ropa.getNombreModelo() + " es " + ropa.getFechaInicioProd());
+				
 
 			}
 
@@ -279,8 +265,7 @@ public class RopaDAOJDBCImpl implements RopaDAO {
 
 			{
 
-				JOptionPane.showMessageDialog(null, "Fecha no encontrada");
-
+				return null;
 			}
 
 		}
@@ -318,7 +303,6 @@ public class RopaDAOJDBCImpl implements RopaDAO {
 		}
 
 	}
-
 	public int modeloRealizarVenta(Ropa ropa)
 
 	{
@@ -353,25 +337,17 @@ public class RopaDAOJDBCImpl implements RopaDAO {
 
 					stmt1.setString(2, ropa.getNombreModelo());
 
-					JOptionPane.showMessageDialog(null, "Venta realizada con exito");
-
 					return stmt1.executeUpdate();
-				}
-				else {
+				} else {
 
-					JOptionPane.showMessageDialog(null,
-							"Error en el proseamiento de la venta.\nRevise que haya stock del modelo.");
-
+					return -2;
 				}
 			}
 
 			else
 
 			{
-
-				JOptionPane.showMessageDialog(null,
-						"Error en el proseamiento de la venta.\nModelo no encontrado.");
-
+				return -1;
 			}
 
 		}
@@ -406,10 +382,9 @@ public class RopaDAOJDBCImpl implements RopaDAO {
 			}
 
 		}
-		return 0;
 	}
 
-	public int modeloModificar(Ropa ropa)
+	public int modeloModificar(Ropa ropa, Ropa nuevoRopa)
 
 	{
 		Connection con = null;
@@ -433,35 +408,19 @@ public class RopaDAOJDBCImpl implements RopaDAO {
 
 			{
 
-				String[] options = { "chon-wan", "JFK", "umbakte" };
 				stmt1 = con.prepareStatement(
 						"UPDATE modelos SET nombre_modelo = ?, precio = ?, fabrica = ?, fecha_inicio_prod = ?, stock = ? WHERE nombre_modelo = ?");
 
-				stmt1.setString(1, JOptionPane.showInputDialog("Ingrese un nuevo nombre."));
-				stmt1.setFloat(2, Float.parseFloat(JOptionPane.showInputDialog("Ingrese un nuevo precio.")));
-				stmt1.setInt(3, ((JOptionPane.showOptionDialog(null, "Por favor elija una fabrica", null, 0, 0, null,
-						options, 0)) + 1));
+				stmt1.setString(1, nuevoRopa.getNombreModelo());
+				stmt1.setFloat(2, nuevoRopa.getPrecio());
+				stmt1.setInt(3, (nuevoRopa.getFabrica() + 1));
 
-				Date date;
-				try {
-					date = new SimpleDateFormat("dd/MM/yyyy").parse(JOptionPane
-							.showInputDialog("Por favor ingrese la fecha de inicio de produccion en dd/mm/yyyy"));
+				java.sql.Date dateSql = new java.sql.Date(nuevoRopa.getFechaInicioProd().getTime());
 
-					java.sql.Date dateSql = new java.sql.Date(date.getTime());
+				stmt1.setDate(4, dateSql);
 
-					stmt1.setDate(4, dateSql);
-				} catch (HeadlessException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-				stmt1.setInt(5, Integer.parseInt(JOptionPane.showInputDialog("Por favor ingrese el stock")));
+				stmt1.setInt(5, nuevoRopa.getStock());
 				stmt1.setString(6, ropa.getNombreModelo());
-
-				JOptionPane.showMessageDialog(null, "Modificacion realizada con exito");
 
 				return stmt1.executeUpdate();
 			}
@@ -469,8 +428,7 @@ public class RopaDAOJDBCImpl implements RopaDAO {
 			else
 
 			{
-
-				JOptionPane.showMessageDialog(null, "Error en el proseamiento de la modificacion.");
+				return 0;
 
 			}
 
@@ -507,7 +465,6 @@ public class RopaDAOJDBCImpl implements RopaDAO {
 			}
 
 		}
-		return 0;
 
 	}
 
@@ -522,7 +479,7 @@ public class RopaDAOJDBCImpl implements RopaDAO {
 
 			{
 				String password = dbGetCredentials();
-				System.out.println(password);
+
 				con = DriverManager.getConnection(url, "root", password);
 
 				stmt = con.prepareStatement("SELECT * FROM modelos WHERE nombre_modelo = ?");
@@ -535,33 +492,17 @@ public class RopaDAOJDBCImpl implements RopaDAO {
 
 				{
 
-					String[] options = { "chon-wan", "JFK", "umbakte" };
 					stmt1 = con.prepareStatement(
 							"INSERT INTO modelos (nombre_modelo, precio, fabrica, fecha_inicio_prod, stock) VALUES (?,?,?,?,?)");
 					stmt1.setString(1, ropa.getNombreModelo());
-					stmt1.setFloat(2, Float.parseFloat(JOptionPane.showInputDialog("Ingrese un  precio.")));
-					stmt1.setInt(3, ((JOptionPane.showOptionDialog(null, "Por favor elija una fabrica", null, 0, 0,
-							null, options, 0)) + 1));
+					stmt1.setFloat(2, ropa.getPrecio());
+					stmt1.setInt(3, ropa.getFabrica());
 
-					Date date;
-					try {
-						date = new SimpleDateFormat("dd/MM/yyyy").parse(JOptionPane
-								.showInputDialog("Por favor ingrese la fecha de inicio de produccion en dd/mm/yyyy"));
+					java.sql.Date dateSql = new java.sql.Date(ropa.getFechaInicioProd().getTime());
 
-						java.sql.Date dateSql = new java.sql.Date(date.getTime());
+					stmt1.setDate(4, dateSql);
 
-						stmt1.setDate(4, dateSql);
-					} catch (HeadlessException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (ParseException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
-					stmt1.setInt(5, Integer.parseInt(JOptionPane.showInputDialog("Por favor ingrese el stock")));
-
-					JOptionPane.showMessageDialog(null, "Nuevo modelo ingresado con exito");
+					stmt1.setInt(5, ropa.getStock());
 
 					return stmt1.executeUpdate();
 				}
@@ -570,7 +511,7 @@ public class RopaDAOJDBCImpl implements RopaDAO {
 
 				{
 
-					JOptionPane.showMessageDialog(null, "Modelo ya existente.");
+					return 0;
 
 				}
 
@@ -589,7 +530,6 @@ public class RopaDAOJDBCImpl implements RopaDAO {
 			{
 
 			}
-			return 0;
 
 		}
 
@@ -599,7 +539,7 @@ public class RopaDAOJDBCImpl implements RopaDAO {
 
 	{
 
-		Path file = Paths.get("C:\\Users\\Laboratorio\\Desktop\\dbCredentials.txt");
+		Path file = Paths.get("C:\\Users\\Laboratorio\\Desktop\\Tarea Avanzado\\dbCredentials.txt");
 
 		ObjectInputStream in;
 		try
@@ -673,4 +613,80 @@ public class RopaDAOJDBCImpl implements RopaDAO {
 		 */
 
 	}
+
+	@Override
+	public Ropa modeloBuscar(Ropa ropa) {
+
+		Connection con = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try
+
+		{
+
+			con = DriverManager.getConnection(url, "root", dbGetCredentials());
+
+			stmt = con.prepareStatement("SELECT * FROM modelos INNER JOIN fabricas WHERE nombre_modelo = ?");
+
+			stmt.setString(1, ropa.getNombreModelo());
+
+			rs = stmt.executeQuery();
+
+			if (rs.next())
+
+			{
+				ropa.setFechaString(df.format(rs.getDate("fecha_inicio_prod")));
+				ropa.setStock(rs.getInt("stock"));
+				ropa.setPrecioString(currency.format(rs.getFloat("precio")));
+				System.out.println(ropa.getPrecioString());
+				ropa.setFabricaString(rs.getString("f_nombre"));
+
+				return ropa;
+
+			}
+
+			else
+
+			{
+
+				return null;
+
+			}
+
+		}
+
+		catch (SQLException e)
+
+		{
+
+			throw new RuntimeException(e);
+
+		}
+
+		finally
+
+		{
+
+			try
+
+			{
+				rs.close();
+				stmt.close();
+				con.close();
+
+			}
+
+			catch (SQLException e)
+
+			{
+
+				e.printStackTrace();
+
+			}
+
+		}
+
+	}
+
 }
